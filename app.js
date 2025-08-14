@@ -52,14 +52,21 @@ app.get('/', (req, res) => {
 
 sequelize.sync({ alter: false }).then(() => {
     console.log('Database synced');
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-        console.log(`Access the blog at http://localhost:${PORT}`);
-    });
+    // Only listen when not in a serverless environment like Vercel
+    if (!process.env.VERCEL) {
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+            console.log(`Access the blog at http://localhost:${PORT}`);
+        });
+    }
 }).catch(err => {
     console.error('Unable to sync database:', err);
-    // 即使数据库同步失败也启动服务器
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT} (with sync error)`);
-    });
+    // Fallback for local dev
+    if (!process.env.VERCEL) {
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT} (with sync error)`);
+        });
+    }
 });
+
+module.exports = app;
