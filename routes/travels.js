@@ -1,14 +1,21 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const { Travel, Itinerary } = require('../models');
 const { isAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Use /tmp directory for uploads in Vercel environment
+const uploadDir = process.env.VERCEL ? path.join('/tmp', 'uploads') : 'uploads';
+if (process.env.VERCEL && !fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/')
+    cb(null, uploadDir)
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname))
